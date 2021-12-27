@@ -1,21 +1,28 @@
-from flask import Flask, render_template, jsonify, request
-from flask_socketio import SocketIO
 import json
 import flask
-from mongo import mongo
+from pymongo.cursor import _SocketManager
+from tools.mongo import mongo
+from flask_cors import CORS
+from flask import Flask, render_template, jsonify, request
+from flask_socketio import _SocketIOMiddleware, SocketIO, emit, join_room, send
 
 app = Flask(__name__,template_folder='template')
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 mongo = mongo()
+CORS(app)
 
 #main page
 @app.route("/")
 def index():
     return render_template('index.html', title='Home')
 
+# class Methods:
+#     POST = "POST"
+#     GET = "GET"
+
 
 #Registration 
-@app.route("/add_User", methods=['Post', 'Get'])
+@app.route("/add_User", methods=['Post'])
 def register():
     """expects - {"first_name": "", "last_name": "", "id": "", "e-mail": "", "Book_name": "", "password": ""}"""
 
@@ -23,11 +30,12 @@ def register():
         content = request.get_json()
 
     message = mongo.add_user("Users", content)
-    return message
+    json_message = {'message': message}
+    return json_message
 
 
 #Login
-@app.route("/login", methods=['Post', 'Get'])
+@app.route("/login" , methods=['Post'])
 def login():
     """expects - {"e-mail": "", "password": ""}"""
 
@@ -35,11 +43,12 @@ def login():
         content = request.get_json()
 
     message = mongo.login("Users", content)
-    return message
+    json_message = {'message': message}
+    return json_message
 
 
 #update Book
-@app.route("/update_book", methods=['Post', 'Get'])
+@app.route("/update_book", methods=['Post'])
 def update_book():
     """expects - {"id": "", "Book_name": ""}"""
 
@@ -59,18 +68,20 @@ def delete_user():
 #getting all users
 @app.route("/get_Users", methods=['GET'])
 def get_Users():
-    return str(list(mongo.get_users("Users")))
+    return jsonify(list(mongo.get_users("Users")))
 
 
 #getting specific user by id
 @app.route("/get_User/<string:id>", methods=['GET'])
 def get_User(id):
-    return str(mongo.get_user("Users", id))
+    return jsonify(mongo.get_user("Users", id))
 
 
 #joining new room
 @socketio.on('join')
-def join_new_room(self, room_id, methods=['GET', 'POST']):
+def join_new_room(room_id):
+    """expects - {"room_id": ""}"""
+
     data = json.loads(room_id)
 
     #check if the room exists
@@ -81,28 +92,27 @@ def join_new_room(self, room_id, methods=['GET', 'POST']):
         print(mongo.create_room("Chat", data["room_id"]))
         join_room(data["room_id"])
 
+
     #sending assurance that client entered the room
-    user = mongo.get_user("Users", data["user1_id"])
-    send(user['fname'] + ' has entered the room.', to=data["room_id"])
+    #user = mongo.get_user("Users", data["room_id"].split("&")[0])
+    #send(user['first_name'] + ' has entered the room.', to=data["room_id"])
 
 
 #handling message
 @socketio.on('handle_message')
-def handle_message(self, chat_data, methods=['GET', 'POST']):
-    """expects - {"room_id":id(str), "chat: ['msg': (str), 'date': (str), 'who_sent': id(str)]"}"""
+def handle_message(chat_data):
+    """expects - {"room_id":id(str), "chat: [{'msg': (str), 'date': (str), 'who_sent': id(str)]}"}"""
 
     data = json.loads(chat_data)
     print(mongo.add_message("Chat", data))
-    emit(data, to=data["room_id"])
-
+    emit("chat", data["chat"], to=data["room_id"])
 
 
 #getting specific chat by id
-@app.route("/get_Chat/<string:id>", methods=['GET'])
-def get_chat(self, room_id):
-    return str(mongo.get_chat("Chat", room_id))
+@app.route("/get_Chat/<string:room_id>", methods=['GET'])
+def get_chat(room_id):
+    return jsonify(mongo.get_chat("Chat", room_id))
     
-
 
 if __name__ =="__main__":
     socketio.run(app, debug=True, port=8080)
