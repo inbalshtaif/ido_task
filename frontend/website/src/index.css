@@ -1,0 +1,90 @@
+body {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 22px;
+  background-color: rgb(142, 179, 228);
+  
+}
+
+h1 {
+  text-shadow: 2px 2px 2px rgb(245, 245, 252);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+/* Add a black background color to the top navigation */
+.topnav {
+  background-color: rgb(77, 100, 131);
+  overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: rgb(50, 65, 85);
+  color: rgb(243, 240, 240);
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+  background-color: rgb(5, 5, 5);
+}
+
+td {
+  background-color: rgb(50, 65, 85);
+  height: 300px;
+  width: 200px;
+  align-self: center;
+}
+
+td.center {
+  margin-left: auto; 
+  margin-right: auto;
+}
+
+.login{
+  margin: auto;
+  width: 60%;
+  border: 3px solid rgb(50, 65, 85);
+  padding: 10px;
+  position: relative;
+  top: 100px;
+}
+
+.register{
+  margin: auto;
+  width: 60%;
+  border: 3px solid rgb(50, 65, 85);
+  padding: 10px;
+  position: relative;
+  top: 100px;
+}
+
+.users{
+  position: relative;
+  top: 5px;
+}
+
+.button{
+  border: 3px solid rgb(50, 65, 85);
+  border-style: solid;
+}
+
+.textArea{
+  position: relative;
+  top: 80px;
+  background-color: rgb(122, 144, 175);
+}
